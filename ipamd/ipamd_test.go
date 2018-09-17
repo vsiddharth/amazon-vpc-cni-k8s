@@ -333,3 +333,24 @@ func TestGetCurWarmIPTarget(t *testing.T) {
 	assert.True(t, warmIPTargetDefined)
 	assert.Equal(t, curWarmIPTarget, int64(0))
 }
+
+func TestNetworkResourceProvisioningTableTests(t *testing.T) {
+	var testCases = [] struct {
+		value string
+		expected bool
+	} {
+		{"true", true},
+		{"false", false},
+		{"", false},
+		{"True", true},
+		{"False", false},
+		{"TRUE", true},
+		{"FALSE", false},
+	}
+
+	for _, testCase := range testCases {
+		os.Setenv("DISABLE_NETWORK_RESOURCE_PROVISIONING", testCase.value)
+		assert.Equal(t, testCase.expected, getNetworkResourceProvisioningStatus())
+		os.Unsetenv("DISABLE_NETWORK_RESOURCE_PROVISIONING")
+	}
+}
