@@ -286,7 +286,9 @@ func (c *IPAMContext) getLocalPodsWithRetry() ([]*k8sapi.K8SPodInfo, error) {
 func (c *IPAMContext) StartNodeIPPoolManager() {
 	for {
 		time.Sleep(ipPoolMonitorInterval)
-		c.updateIPPoolIfRequired()
+		if getNetworkResourceProvisioningStatus() == false {
+			c.updateIPPoolIfRequired()
+		}
 		c.nodeIPPoolReconcile(nodeIPPoolReconcileInterval)
 	}
 }
@@ -760,4 +762,18 @@ func (c *IPAMContext) getCurWarmIPTarget() (int64, bool) {
 	curTarget := int64(target) - int64(total-used)
 
 	return curTarget, true
+}
+
+func getNetworkResourceProvisioningStatus() bool {
+	disableNetworkResourceProvisioning, found := os.LookupEnv("DISABLE_NETWORK_RESOURCE_PROVISIONING")
+	if !found {
+		return false
+	}
+
+	disableNetworkResourceProvisioningStatus, err := strconv.ParseBool(disableNetworkResourceProvisioning)
+	if err != nil {
+		return false
+	}
+
+	return disableNetworkResourceProvisioningStatus
 }
